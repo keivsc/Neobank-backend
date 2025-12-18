@@ -46,7 +46,7 @@ router.post('/totp', async (req, res) => {
         if (!valid) return res.status(400).json({ error: "Invalid TOTP code." });
 
         const sessionToken = await generateToken(userId, deviceId);
-        res.cookie('session', sessionToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 3600 * 1000 });
+        res.cookie('session', sessionToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 3600 * 1000 });
         res.status(200).json({ success: true });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -91,8 +91,8 @@ router.post('/verify', async (req, res) => {
 
         res.cookie('session', result.sessionToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'None',
             maxAge: 60 * 60 * 1000
         });
 

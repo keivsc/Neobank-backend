@@ -170,7 +170,7 @@ router.post('/verify', async(req, res)=>{
     res.cookie('x-device-id', deviceId, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'None',
         maxAge: 60 * 60 * 1000
     });
     logger.log(`New Device Registered: ${deviceId}, IP: ${req.ip}`)
