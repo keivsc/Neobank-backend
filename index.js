@@ -14,7 +14,7 @@ dotenv.config({quiet:true});
 const logger = new Logger('main');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware setup
 app.use(cors({
