@@ -33,5 +33,6 @@ app.use('/device',deviceRoutes)
 
 // Start server
 app.listen(PORT, () => {
+  logger.info(`CORS allowed: ${process.env.FRONTEND_URL}`)
   logger.info(`Express server running on http://localhost:${PORT}`);
 });
