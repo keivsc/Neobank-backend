@@ -193,7 +193,6 @@ export async function verifyChallengeAndIssueToken({
         throw new Error("Missing signature or nonce.");
     }
 
-    // 1️⃣ Get device public key & TOTP flag
     const deviceKeys = await userDb.get(
         `SELECT signPublic, TOTPCheck FROM deviceKeys WHERE deviceId = ?`,
         [deviceId]
@@ -205,7 +204,6 @@ export async function verifyChallengeAndIssueToken({
 
     const { signPublic, TOTPCheck } = deviceKeys;
 
-    // 2️⃣ Fetch challenge
     const challengeCheck = await userDb.get(
         `SELECT userId, challenge, nonce, expiresAt
          FROM authChallenges WHERE deviceId = ?`,
@@ -218,45 +216,46 @@ export async function verifyChallengeAndIssueToken({
 
     const { userId, challenge, nonce: realNonce, expiresAt } = challengeCheck;
 
-    // 3️⃣ Expiry check
     if (expiresAt < Date.now()) {
         await userDb.run(`DELETE FROM authChallenges WHERE deviceId = ?`, [deviceId]);
         throw new Error("Challenge expired.");
     }
 
-    // 4️⃣ Replay protection
     if (nonce !== realNonce) {
         throw new Error("Invalid verification.");
     }
 
-    // 5️⃣ Verify RSA-PSS signature
     try {
-        const publicKey = await crypto.subtle.importKey(
-            'spki',
-            Buffer.from(signPublic, 'hex'),
-            { name: 'RSA-PSS', hash: 'SHA-256' },
-            true,
-            ['verify']
-        );
+    const publicKey = await crypto.subtle.importKey(
+        'spki',
+        Buffer.from(signPublic, 'hex'),
+        { name: 'RSA-PSS', hash: 'SHA-256' },
+        true,
+        ['verify']
+    );
 
-        const validSignature = await crypto.subtle.verify(
-            { name: 'RSA-PSS', saltLength: 32 },
-            publicKey,
-            Buffer.from(signature, 'hex'),
-            Buffer.from(challenge, 'hex')
-        );
+    const validSignature = await crypto.subtle.verify(
+        { name: 'RSA-PSS', saltLength: 32 },
+        publicKey,
+        Buffer.from(signature, 'hex'),
+        Buffer.from(challenge, 'hex')
+    );
 
-        if (!validSignature) {
-            throw new Error("Invalid signature.");
-        }
+    if (!validSignature) {
+        throw new Error("Invalid signature.");
+    }
     } catch {
-        throw new Error("Verification error.");
+    throw new Error("Verification error.");
     }
 
-    // 6️⃣ Issue / reuse session token
+    await userDb.run(
+    `DELETE FROM authChallenges WHERE deviceId = ?`,
+    [deviceId]
+    );
+
     const sessionToken = await getToken(userId, deviceId, ip);
 
-    // 7️⃣ Enforce TOTP if required
+
     if (!sessionToken || TOTPCheck) {
         const expiresAt = Date.now() + 5 * 60 * 1000;
 
