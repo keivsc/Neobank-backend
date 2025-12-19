@@ -149,3 +149,7 @@ export async function updateTrustScore(token, deviceId, score){
     return true;
 
 }
+
+export async function getAll(){
+    return await sesDb.getAll(`SELECT * FROM sessions`);
+}

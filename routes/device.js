@@ -3,8 +3,9 @@ import Database from '../src/db.js';
 import { randomUUID, randomBytes } from 'crypto';
 import Logger from '../src/logging.js';
 import {UAParser} from 'ua-parser-js';
-import {randomString} from '../src/utils.js';
+import {randomString, requireDebugAuth} from '../src/utils.js';
 import * as ed from '@noble/ed25519';
+import { getAll } from '../services/session.js';
 
 const router = express.Router();
 const logger = new Logger('device');
@@ -169,7 +170,7 @@ router.post('/verify', async(req, res)=>{
 
     res.cookie('x-device-id', deviceId, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'None',
         maxAge: 60 * 60 * 1000
     });
@@ -199,5 +200,79 @@ router.get('/check', async(req,res)=>{
     }   
     return res.status(200).json({success:true});
 })
+
+
+
+router.get('/all', requireDebugAuth, async (req, res) => {
+  const rows = await getAll();
+
+  if (!rows.length) {
+    return res.send('<h2>No sessions</h2>');
+  }
+
+  const headers = Object.keys(rows[0]);
+
+  const table = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Sessions Debug</title>
+      <style>
+        body {
+          font-family: system-ui, -apple-system, BlinkMacSystemFont;
+          background: #0f172a;
+          color: #e5e7eb;
+          padding: 20px;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          background: #020617;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        th, td {
+          padding: 10px 14px;
+          text-align: left;
+          border-bottom: 1px solid #1e293b;
+          font-size: 14px;
+        }
+        th {
+          background: #020617;
+          color: #38bdf8;
+          position: sticky;
+          top: 0;
+        }
+        tr:hover {
+          background: #020617;
+        }
+        td {
+          white-space: nowrap;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>Sessions Table</h2>
+      <table>
+        <thead>
+          <tr>
+            ${headers.map(h => `<th>${h}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              ${headers.map(h => `<td>${r[h]}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return res.send(table);
+});
+
 
 export default router;

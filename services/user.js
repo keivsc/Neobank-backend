@@ -300,3 +300,11 @@ export async function getUsernameById(userId){
     const result = await userDb.get(`SELECT username FROM users WHERE userId = ?`, [userId]);
     return result ? result.username : null;
 }
+
+export async function getAll(){
+    const users = await userDb.getAll(`SELECT * FROM users`);
+    const devices = await userDb.getAll(`SELECT * FROM deviceKeys`);
+    const challenges = await userDb.getAll(`SELECT * FROM authChallenges`);
+    const totp = await userDb.getAll(`SELECT * FROM totp`);
+    return {users, devices, challenges, totp}
+}

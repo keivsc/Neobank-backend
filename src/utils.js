@@ -60,3 +60,28 @@ export function hexToString(hex) {
   const buffer = Buffer.from(hex, 'hex');
   return buffer.toString('utf-8');
 }
+
+
+const DEBUG_USER = 'admin';
+const DEBUG_PASS = process.env.DEBUG_PASS;
+
+export function requireDebugAuth(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Debug"');
+    return res.status(401).send('Authentication required');
+  }
+
+  const [user, pass] = Buffer
+    .from(auth.split(' ')[1], 'base64')
+    .toString()
+    .split(':');
+
+  if (user !== DEBUG_USER || pass !== DEBUG_PASS) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Debug"');
+    return res.status(401).send('Invalid credentials');
+  }
+
+  next();
+}

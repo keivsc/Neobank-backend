@@ -299,6 +299,14 @@ export async function receiveMoney(requestId, senderUserId, payload, signature) 
 
 }
 
+export async function getAllAccounts() {
+  return await bankDb.getAll(`SELECT * FROM bankAccounts`);
+}
+
+export async function getAllMoneyRequests() {
+  return await bankDb.getAll(`SELECT * FROM moneyRequests`);
+}
+
 
 
 function generateAccountNumber(length = 16) {

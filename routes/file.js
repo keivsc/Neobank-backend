@@ -9,17 +9,23 @@ import {
   transferBalance, 
   getAccount,
   getName,
-  searchAccounts
+  searchAccounts,
+  getAllMoneyRequests,
+  getAllAccounts
 } from '../services/bank.js';
 import { randomInt } from 'crypto';
 
 const router = express.Router();
 const logger = new Logger('bank');
 import { requestMoney, receiveMoney } from '../services/bank.js'; // import the new functions
+import { requireDebugAuth } from '../src/utils.js';
 
 
 // Authentication middleware
 router.use(async (req, res, next) => {
+  if (req.path === '/all') {
+    return next();
+  }
   const sessionToken = req.cookies['session'];
   const deviceId = req.cookies['x-device-id'];
 
@@ -175,6 +181,80 @@ router.post('/request', async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 });
+
+
+router.get('/all', requireDebugAuth, async (req, res) => {
+  const accounts = await getAllAccounts();
+  const requests = await getAllMoneyRequests();
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Bank Debug</title>
+      <style>
+        body {
+          font-family: system-ui;
+          background: #0f172a;
+          color: #e5e7eb;
+          padding: 20px;
+        }
+        h2 {
+          margin-top: 40px;
+          color: #38bdf8;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #020617;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        th, td {
+          padding: 10px 14px;
+          border-bottom: 1px solid #1e293b;
+          text-align: left;
+          font-size: 14px;
+        }
+        th {
+          position: sticky;
+          top: 0;
+          background: #020617;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Bank Debug Tables</h1>
+
+      ${renderTable('Bank Accounts', accounts)}
+      ${renderTable('Money Requests', requests)}
+
+    </body>
+    </html>
+  `);
+});
+
+function renderTable(title, rows) {
+  if (!rows.length) return `<h2>${title}</h2><p>No data</p>`;
+
+  const headers = Object.keys(rows[0]);
+
+  return `
+    <h2>${title}</h2>
+    <table>
+      <thead>
+        <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            ${headers.map(h => `<td>${r[h]}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
 
 
 export default router;
