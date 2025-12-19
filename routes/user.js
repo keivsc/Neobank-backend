@@ -77,8 +77,7 @@ router.post('/verify', async (req, res) => {
     try {
         const { signature, nonce } = req.body;
         const deviceId = req.cookies['x-device-id'];
-        const forwarded = req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']; 
-        const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip || 'unknown';
+        const ip = req.headers['true-client-ip']
         const result = await verifyChallengeAndIssueToken({
             deviceId,
             signature,
