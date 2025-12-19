@@ -116,7 +116,7 @@ router.post('/session', async (req, res) => {
         return res.status(400).json({ error: "Missing device id." });
     }
 
-    const userId = verifyToken(token, deviceId);
+    const userId = await verifyToken(token, deviceId);
     if (!userId) {
         return res.status(400).json({ error: "Invalid Session" });
     }
