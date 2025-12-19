@@ -30,11 +30,6 @@ app.use('/user', userRoutes);
 app.use('/bank', fileRoutes);
 app.use('/device',deviceRoutes)
 
-app.get('/debug-headers', (req, res) => {
-  console.log(req.headers); // logs all headers sent by the client
-  res.json(req.headers);    // optional: see headers in browser
-});
-
 
 // Start server
 app.listen(PORT, () => {

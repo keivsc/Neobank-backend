@@ -174,7 +174,9 @@ router.post('/verify', async(req, res)=>{
         sameSite: 'None',
         maxAge: 60 * 60 * 1000
     });
-    logger.log(`New Device Registered: ${deviceId}, IP: ${req.ip}`)
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip || 'unknown';
+    logger.log(`New Device Registered: ${deviceId}, IP: ${ip}`)
     return res.status(200).json({success: true, deviceId});
 
 });
