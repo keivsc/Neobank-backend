@@ -50,7 +50,7 @@ export async function createAccount(type, userId) {
     [accountNumber, type, 200000, userId]
   );
 
-  return { success: true, account:getAccount(accountNumber) };
+  return { success: true, account:await getAccount(accountNumber) };
 }
 
 // ADD balance
