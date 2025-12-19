@@ -35,6 +35,10 @@ app.get('/debug-headers', (req, res) => {
   res.json(req.headers);    // optional: see headers in browser
 });
 
+app.get('/my-ip', (req,res)=>{
+  return res.send(req.headers['true-client-ip']);
+})
+
 
 // Start server
 app.listen(PORT, () => {
