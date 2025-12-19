@@ -66,6 +66,7 @@ const DEBUG_USER = 'admin';
 const DEBUG_PASS = process.env.DEBUG_PASS;
 
 export function requireDebugAuth(req, res, next) {
+  // --- Basic Auth check ---
   const auth = req.headers.authorization;
 
   if (!auth || !auth.startsWith('Basic ')) {
@@ -81,6 +82,15 @@ export function requireDebugAuth(req, res, next) {
   if (user !== DEBUG_USER || pass !== DEBUG_PASS) {
     res.setHeader('WWW-Authenticate', 'Basic realm="Debug"');
     return res.status(401).send('Invalid credentials');
+  }
+
+  // --- IP check ---
+  // Whitelist of allowed IPs
+  const allowedIp = process.env.ALLOWED_IP
+  const clientIp = (req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || 'unknown');
+
+  if (allowedIp === clientIp) {
+    return res.status(403).send(`Forbidden: IP ${clientIp} not allowed`);
   }
 
   next();
