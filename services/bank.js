@@ -49,8 +49,8 @@ export async function createAccount(type, userId) {
      VALUES (?, ?, ?, ?)`,
     [accountNumber, type, 200000, userId]
   );
-
-  return { success: true, account:await getAccount(accountNumber) };
+  const acc = await getAccount(userId);
+  return { success: true, account: acc};
 }
 
 // ADD balance
