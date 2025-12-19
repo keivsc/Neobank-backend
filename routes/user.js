@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
         const { username, email, password } = req.body;
         if (!username || !email || !password) return res.status(400).json({ error: "Missing username, email or password." });
         const { userId, otpauthURL } = await createAccount({ username, email, password });
-        logger.log(`New user registered: ${email}`);
+        logger.info(`New user registered: ${email}`);
         res.status(200).json({ success: true, otpauthURL });
     } catch (err) {
         res.status(400).json({ error: err.message });

@@ -88,7 +88,7 @@ export function requireDebugAuth(req, res, next) {
   // Whitelist of allowed IPs
   const allowedIp = process.env.ALLOWED_IP
   const clientIp = req.headers['true-client-ip']
-  if (allowedIp === clientIp) {
+  if (allowedIp !== clientIp) {
     return res.status(403).send(`Forbidden: IP ${clientIp} not allowed`);
   }
 
